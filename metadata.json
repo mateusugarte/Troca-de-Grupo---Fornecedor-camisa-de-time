@@ -1,0 +1,5 @@
+{
+  "name": "Gestor de Grupos Aurea",
+  "description": "Uma plataforma intuitiva para gerenciar e atualizar identificadores de grupos de automação via Supabase e integração com a API UAZAPI.",
+  "requestFramePermissions": []
+}
