@@ -1,11 +1,10 @@
-
 import { UazApiResponse } from '../types';
 
 const API_URL = 'https://aurea-group.uazapi.com/group/inviteInfo';
 const API_TOKEN = '7ac1c763-8119-4e02-9021-89c6e48a694d';
 
 export const fetchGroupInviteInfo = async (linkOuCodigo: string): Promise<any> => {
-  console.log('Solicitando link:', linkOuCodigo);
+  console.log('Iniciando coleta para:', linkOuCodigo);
   
   try {
     const response = await fetch(API_URL, {
@@ -21,9 +20,8 @@ export const fetchGroupInviteInfo = async (linkOuCodigo: string): Promise<any> =
     });
 
     const rawData = await response.json();
-    console.log('Resposta da API recebida:', rawData);
+    console.log('Dados brutos recebidos:', rawData);
 
-    // Se o status HTTP não for 2xx (ex: 400, 401, 500)
     if (!response.ok) {
       return {
         _debug_error: true,
@@ -33,16 +31,23 @@ export const fetchGroupInviteInfo = async (linkOuCodigo: string): Promise<any> =
       };
     }
 
-    // Tenta encontrar JID e Name em qualquer lugar do objeto (case-insensitive e aninhado)
+    // Função auxiliar para buscar campos JID e Name em qualquer profundidade do JSON
     const findInObject = (obj: any, keyToFind: string): any => {
       if (!obj || typeof obj !== 'object') return null;
-      if (obj[keyToFind]) return obj[keyToFind];
       
+      // Busca direta (Case Sensitive)
+      if (obj[keyToFind] !== undefined) return obj[keyToFind];
+      
+      // Busca Case Insensitive nas chaves do nível atual
       for (const k in obj) {
         if (k.toLowerCase() === keyToFind.toLowerCase()) return obj[k];
-        if (typeof obj[k] === 'object') {
+      }
+
+      // Busca recursiva em objetos filhos
+      for (const k in obj) {
+        if (typeof obj[k] === 'object' && obj[k] !== null) {
           const found = findInObject(obj[k], keyToFind);
-          if (found) return found;
+          if (found !== null) return found;
         }
       }
       return null;
@@ -55,10 +60,10 @@ export const fetchGroupInviteInfo = async (linkOuCodigo: string): Promise<any> =
       JID,
       Name,
       status: rawData.status || 'unknown',
-      _raw: rawData // Mantemos o dado bruto para mostrar na tela
+      _raw: rawData 
     };
   } catch (err: any) {
-    console.error('Erro de rede ou CORS:', err);
+    console.error('Falha crítica na requisição:', err);
     return {
       _debug_error: true,
       _is_network_error: true,
